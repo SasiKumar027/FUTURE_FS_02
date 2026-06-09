@@ -1,0 +1,72 @@
+const mysql = require("mysql2/promise");
+require("dotenv").config();
+
+const pool = mysql.createPool({
+  host:     process.env.DB_HOST,
+  user:     process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port:     process.env.DB_PORT || 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+});
+
+const initDB = async () => {
+  try {
+    const conn = await pool.getConnection();
+
+    // Create database if not exists
+    await conn.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
+    await conn.query(`USE ${process.env.DB_NAME}`);
+
+    // Create admins table
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create leads table
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS leads (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        phone VARCHAR(20),
+        source ENUM('Website', 'LinkedIn', 'Referral', 'Email', 'Other') DEFAULT 'Website',
+        status ENUM('New', 'Contacted', 'Converted', 'Lost') DEFAULT 'New',
+        notes TEXT,
+        follow_up_date DATE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Insert default admin if not exists
+    const bcrypt = require("bcryptjs");
+    const [existing] = await conn.query(
+      "SELECT id FROM admins WHERE email = ?",
+      [process.env.ADMIN_EMAIL]
+    );
+    if (existing.length === 0) {
+      const hashed = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+      await conn.query(
+        "INSERT INTO admins (name, email, password) VALUES (?, ?, ?)",
+        ["Sasi Kumar", process.env.ADMIN_EMAIL, hashed]
+      );
+      console.log("✅ Default admin created");
+    }
+
+    conn.release();
+    console.log("✅ Database initialized successfully");
+  } catch (err) {
+    console.error("❌ Database init error:", err.message);
+    process.exit(1);
+  }
+};
+
+module.exports = { pool, initDB };
