@@ -9,15 +9,12 @@ const pool = mysql.createPool({
   port:     process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
+  ssl: { rejectUnauthorized: false }, // ← Required for Railway
 });
 
 const initDB = async () => {
   try {
     const conn = await pool.getConnection();
-
-    // Create database if not exists
-    await conn.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
-    await conn.query(`USE ${process.env.DB_NAME}`);
 
     // Create admins table
     await conn.query(`
