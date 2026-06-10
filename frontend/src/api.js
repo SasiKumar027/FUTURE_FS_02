@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = axios.create({ baseURL: "https://future-fs-02-10-z73v.onrender.com" });
+const API = axios.create({ baseURL: "https://future-fs-02-10-z73v.onrender.com/api" });
 
 // Attach token to every request
 API.interceptors.request.use((config) => {
