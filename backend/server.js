@@ -9,7 +9,13 @@ const leadsRoutes = require("./routes/leads");
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://future-fs-02-olive-six.vercel.app/"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
