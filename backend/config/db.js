@@ -19,13 +19,18 @@ const pool = mysql.createPool({
   },
 });
 
+
 const initDB = async () => {
   let conn;
 
   try {
+    // wait for Railway MySQL to be ready
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
     conn = await pool.getConnection();
 
     console.log("✅ Database connected");
+
 
     // Create admins table
     await conn.query(`
@@ -38,6 +43,7 @@ const initDB = async () => {
       )
     `);
 
+
     // Create leads table
     await conn.query(`
       CREATE TABLE IF NOT EXISTS leads (
@@ -45,14 +51,16 @@ const initDB = async () => {
         name VARCHAR(100) NOT NULL,
         email VARCHAR(100) NOT NULL,
         phone VARCHAR(20),
-        source ENUM('Website', 'LinkedIn', 'Referral', 'Email', 'Other') DEFAULT 'Website',
-        status ENUM('New', 'Contacted', 'Converted', 'Lost') DEFAULT 'New',
+        source ENUM('Website','LinkedIn','Referral','Email','Other') DEFAULT 'Website',
+        status ENUM('New','Contacted','Converted','Lost') DEFAULT 'New',
         notes TEXT,
         follow_up_date DATE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+        ON UPDATE CURRENT_TIMESTAMP
       )
     `);
+
 
 
     // Create default admin
@@ -63,26 +71,31 @@ const initDB = async () => {
       [process.env.ADMIN_EMAIL]
     );
 
+
     if (existing.length === 0) {
+
       const hashedPassword = await bcrypt.hash(
         process.env.ADMIN_PASSWORD,
         10
       );
+
 
       await conn.query(
         "INSERT INTO admins (name,email,password) VALUES (?,?,?)",
         [
           "Sasi Kumar",
           process.env.ADMIN_EMAIL,
-          hashedPassword,
+          hashedPassword
         ]
       );
+
 
       console.log("✅ Default admin created");
     }
 
 
     console.log("✅ Database initialized successfully");
+
 
   } catch (err) {
 
@@ -91,8 +104,9 @@ const initDB = async () => {
       err.message
     );
 
-    // Don't crash Render deployment
-    // Keep server running
+    // Don't stop Render deployment
+    // Server continues running
+
   } finally {
 
     if (conn) {
