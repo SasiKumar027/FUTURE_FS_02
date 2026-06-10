@@ -2,11 +2,7 @@ const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT),
+  uri: process.env.DATABASE_URL,
 
   waitForConnections: true,
   connectionLimit: 5,
@@ -24,7 +20,7 @@ const initDB = async () => {
   let conn;
 
   try {
-    // wait for Railway MySQL to be ready
+    // wait for Railway database startup
     await new Promise(resolve => setTimeout(resolve, 5000));
 
     conn = await pool.getConnection();
@@ -32,7 +28,7 @@ const initDB = async () => {
     console.log("✅ Database connected");
 
 
-    // Create admins table
+    // Admin table
     await conn.query(`
       CREATE TABLE IF NOT EXISTS admins (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,7 +40,7 @@ const initDB = async () => {
     `);
 
 
-    // Create leads table
+    // Leads table
     await conn.query(`
       CREATE TABLE IF NOT EXISTS leads (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,7 +52,7 @@ const initDB = async () => {
         notes TEXT,
         follow_up_date DATE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP
       )
     `);
@@ -89,7 +85,6 @@ const initDB = async () => {
         ]
       );
 
-
       console.log("✅ Default admin created");
     }
 
@@ -103,9 +98,6 @@ const initDB = async () => {
       "❌ Database init error:",
       err.message
     );
-
-    // Don't stop Render deployment
-    // Server continues running
 
   } finally {
 
