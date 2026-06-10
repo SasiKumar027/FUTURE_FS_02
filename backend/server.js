@@ -21,6 +21,9 @@ app.get("/", (req, res) => res.json({ message: "CRM API running ✅" }));
 
 // Start
 const PORT = process.env.PORT || 5000;
-initDB().then(() => {
-  app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+
+  initDB();
 });
