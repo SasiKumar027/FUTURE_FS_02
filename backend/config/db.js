@@ -2,19 +2,30 @@ const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 const pool = mysql.createPool({
-  host:     process.env.DB_HOST,
-  user:     process.env.DB_USER,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port:     process.env.DB_PORT || 3306,
+  port: Number(process.env.DB_PORT),
+
   waitForConnections: true,
-  connectionLimit: 10,
-  ssl: { rejectUnauthorized: false }, // ← Required for Railway
+  connectionLimit: 5,
+  queueLimit: 0,
+
+  connectTimeout: 30000,
+
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 const initDB = async () => {
+  let conn;
+
   try {
-    const conn = await pool.getConnection();
+    conn = await pool.getConnection();
+
+    console.log("✅ Database connected");
 
     // Create admins table
     await conn.query(`
@@ -43,27 +54,56 @@ const initDB = async () => {
       )
     `);
 
-    // Insert default admin if not exists
+
+    // Create default admin
     const bcrypt = require("bcryptjs");
+
     const [existing] = await conn.query(
       "SELECT id FROM admins WHERE email = ?",
       [process.env.ADMIN_EMAIL]
     );
+
     if (existing.length === 0) {
-      const hashed = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-      await conn.query(
-        "INSERT INTO admins (name, email, password) VALUES (?, ?, ?)",
-        ["Sasi Kumar", process.env.ADMIN_EMAIL, hashed]
+      const hashedPassword = await bcrypt.hash(
+        process.env.ADMIN_PASSWORD,
+        10
       );
+
+      await conn.query(
+        "INSERT INTO admins (name,email,password) VALUES (?,?,?)",
+        [
+          "Sasi Kumar",
+          process.env.ADMIN_EMAIL,
+          hashedPassword,
+        ]
+      );
+
       console.log("✅ Default admin created");
     }
 
-    conn.release();
+
     console.log("✅ Database initialized successfully");
+
   } catch (err) {
-    console.error("❌ Database init error:", err.message);
-    process.exit(1);
+
+    console.error(
+      "❌ Database init error:",
+      err.message
+    );
+
+    // Don't crash Render deployment
+    // Keep server running
+  } finally {
+
+    if (conn) {
+      conn.release();
+    }
+
   }
 };
 
-module.exports = { pool, initDB };
+
+module.exports = {
+  pool,
+  initDB
+};
