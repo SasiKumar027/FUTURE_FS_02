@@ -5,6 +5,7 @@ export default function Login({ onLogin }) {
   const [fields, setFields] = useState({ email: "", password: "" });
   const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) =>
     setFields({ ...fields, [e.target.name]: e.target.value });
@@ -51,10 +52,20 @@ export default function Login({ onLogin }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <div className="form-group-header">
+              <label className="form-label">Password</label>
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
             <input
               className="form-input"
-              type="password" name="password"
+              type={showPassword ? "text" : "password"}
+              name="password"
               value={fields.password} onChange={handleChange}
               placeholder="••••••••" required
             />
@@ -68,10 +79,6 @@ export default function Login({ onLogin }) {
             {loading ? "Signing in..." : "Sign In →"}
           </button>
         </form>
-
-        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.75rem", color: "var(--muted)" }}>
-          Default: sasikumarchodavarapu2005@gmail.com / admin123
-        </p>
       </div>
     </div>
   );
