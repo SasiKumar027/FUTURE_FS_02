@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { leadsAPI } from "../api";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 
 const SOURCE_OPTIONS = ["Website", "LinkedIn", "Referral", "Email", "Other"];
 const STATUS_OPTIONS = ["New", "Contacted", "Converted", "Lost"];
@@ -74,8 +76,15 @@ export default function AddLead({ onAdded, showToast }) {
 
                 <div className="form-group">
                   <label className="form-label">Phone Number</label>
-                  <input className="form-input" type="text" name="phone"
-                    value={fields.phone} onChange={handleChange} placeholder="+91 9999999999" />
+                  <PhoneInput
+                    international
+                    countryCallingCodeEditable={false}
+                    defaultCountry="US"
+                    value={fields.phone}
+                    onChange={(phone) => setFields({ ...fields, phone: phone || "" })}
+                    placeholder="Enter phone number"
+                    className="phone-input-wrapper"
+                  />
                 </div>
 
                 <div className="form-group">

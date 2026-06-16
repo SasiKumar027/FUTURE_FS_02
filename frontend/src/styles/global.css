@@ -256,6 +256,41 @@ tr:hover td { background: var(--surface2); }
 .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 .form-textarea { resize: vertical; min-height: 80px; }
 
+/* PHONE INPUT */
+.phone-input-wrapper .PhoneInput {
+  width: 100%;
+}
+.phone-input-wrapper .PhoneInputInput {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: var(--font);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+  background: white;
+  width: 100%;
+}
+.phone-input-wrapper .PhoneInputInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.phone-input-wrapper .PhoneInputCountry {
+  padding: 0.6rem 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.phone-input-wrapper .PhoneInputCountrySelect {
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  max-height: 300px;
+  font-family: var(--font);
+}
+
 /* EMPTY STATE */
 .empty-state {
   text-align: center; padding: 4rem 2rem;
